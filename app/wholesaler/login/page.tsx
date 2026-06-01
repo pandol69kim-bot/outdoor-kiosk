@@ -1,12 +1,20 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 
 export default function WholesalerLoginPage() {
+  return (
+    <Suspense fallback={<WholesalerLoginFallback />}>
+      <WholesalerLoginContent />
+    </Suspense>
+  )
+}
+
+function WholesalerLoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
@@ -75,6 +83,18 @@ export default function WholesalerLoginPage() {
               로그인
             </Button>
           </form>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function WholesalerLoginFallback() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="max-w-sm w-full">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-sm text-gray-500 text-center">
+          로그인 화면을 불러오는 중입니다.
         </div>
       </div>
     </div>

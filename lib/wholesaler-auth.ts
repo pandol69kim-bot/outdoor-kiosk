@@ -1,21 +1,11 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js'
-import type { Database } from '@supabase/supabase-js/dist/module/lib/types'
 
-type WholesalerRecord = {
-  id: string
-  name: string
-  email: string | null
-  contact: string | null
-  phone: string | null
-  notify_type: 'email' | 'manual'
-  memo: string | null
-  created_at: string
-}
+import type { Wholesaler } from '@/lib/types'
 
 export async function getWholesalerByUser(
-  adminClient: SupabaseClient<Database>,
+  adminClient: SupabaseClient,
   user: User | null
-): Promise<WholesalerRecord | null> {
+): Promise<Wholesaler | null> {
   const email = user?.email?.trim().toLowerCase()
   if (!email) return null
 
@@ -26,7 +16,7 @@ export async function getWholesalerByUser(
     .single()
 
   if (error || !data) return null
-  return data as WholesalerRecord
+  return data as Wholesaler
 }
 
-export type AuthenticatedWholesaler = WholesalerRecord
+export type AuthenticatedWholesaler = Wholesaler
