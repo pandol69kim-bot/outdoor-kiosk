@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Send, ChevronDown } from 'lucide-react'
+import { Send, ChevronDown, Download } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/admin/StatusBadge'
 import type { Order, OrderStatus } from '@/lib/types'
 
@@ -16,6 +17,7 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [notifyingId, setNotifyingId] = useState<string | null>(null)
+  const [downloading, setDownloading] = useState(false)
   const [filter, setFilter] = useState<OrderStatus | 'all'>('all')
 
   async function fetchOrders() {
@@ -25,7 +27,13 @@ export default function AdminOrdersPage() {
     setLoading(false)
   }
 
-  useEffect(() => { fetchOrders() }, [])
+  useEffect(() => {
+    async function loadOrders() {
+      await fetchOrders()
+    }
+
+    void loadOrders()
+  }, [])
 
   async function handleStatusChange(id: string, status: OrderStatus) {
     setUpdatingId(id)
@@ -52,6 +60,36 @@ export default function AdminOrdersPage() {
     setNotifyingId(null)
   }
 
+  async function handleDownload() {
+    setDownloading(true)
+    try {
+      const params = new URLSearchParams()
+      if (filter !== 'all') {
+        params.set('status', filter)
+      }
+
+      const response = await fetch(`/api/orders/export${params.size > 0 ? `?${params.toString()}` : ''}`)
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || '엑셀 다운로드에 실패했습니다.')
+      }
+
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const anchor = document.createElement('a')
+      anchor.href = downloadUrl
+      anchor.download = filter === 'all' ? 'orders-all.csv' : `orders-${filter}.csv`
+      document.body.appendChild(anchor)
+      anchor.click()
+      anchor.remove()
+      window.URL.revokeObjectURL(downloadUrl)
+    } catch (error) {
+      alert(error instanceof Error ? error.message : '엑셀 다운로드에 실패했습니다.')
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter)
 
   return (
@@ -62,23 +100,29 @@ export default function AdminOrdersPage() {
           <p className="text-sm text-gray-500 mt-1">총 {orders.length}개 주문</p>
         </div>
 
-        {/* 필터 */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === 'all' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
-          >
-            전체
-          </button>
-          {STATUS_OPTIONS.map(s => (
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
-              key={s.value}
-              onClick={() => setFilter(s.value)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === s.value ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
+              onClick={() => setFilter('all')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === 'all' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
             >
-              {s.label}
+              전체
             </button>
-          ))}
+            {STATUS_OPTIONS.map(s => (
+              <button
+                key={s.value}
+                onClick={() => setFilter(s.value)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === s.value ? 'bg-indigo-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+
+          <Button type="button" variant="secondary" size="md" loading={downloading} onClick={handleDownload}>
+            <Download className="w-4 h-4" />
+            엑셀 다운로드
+          </Button>
         </div>
       </div>
 
