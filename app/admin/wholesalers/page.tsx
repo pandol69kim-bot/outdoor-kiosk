@@ -17,7 +17,13 @@ export default function AdminWholesalersPage() {
     setLoading(false)
   }
 
-  useEffect(() => { fetchWholesalers() }, [])
+  useEffect(() => {
+    async function loadWholesalers() {
+      await fetchWholesalers()
+    }
+
+    void loadWholesalers()
+  }, [])
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`"${name}" 도매처를 삭제하시겠습니까?`)) return
@@ -28,14 +34,14 @@ export default function AdminWholesalersPage() {
   }
 
   return (
-    <div className="p-6 max-w-5xl">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-5xl p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">도매처 관리</h1>
           <p className="text-sm text-gray-500 mt-1">등록된 도매처 {wholesalers.length}개</p>
         </div>
-        <Link href="/admin/wholesalers/new">
-          <Button size="md">
+        <Link href="/admin/wholesalers/new" className="w-full sm:w-auto">
+          <Button size="md" className="w-full sm:w-auto">
             <Plus className="w-4 h-4" />
             도매처 등록
           </Button>
@@ -56,16 +62,16 @@ export default function AdminWholesalersPage() {
       ) : (
         <div className="grid gap-4">
           {wholesalers.map(w => (
-            <div key={w.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-start justify-between">
+            <div key={w.id} className="flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:flex-row sm:items-start sm:justify-between">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="mb-1 flex flex-wrap items-center gap-2">
                   <h3 className="font-semibold text-gray-900">{w.name}</h3>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${w.notify_type === 'email' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>
                     {w.notify_type === 'email' ? '이메일 자동' : '수동 전달'}
                   </span>
                 </div>
                 {w.contact && <p className="text-sm text-gray-600">담당: {w.contact}</p>}
-                <div className="flex items-center gap-4 mt-2">
+                <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
                   {w.phone && (
                     <span className="flex items-center gap-1 text-xs text-gray-500">
                       <Phone className="w-3 h-3" />{w.phone}
@@ -79,7 +85,7 @@ export default function AdminWholesalersPage() {
                 </div>
                 {w.memo && <p className="text-xs text-gray-400 mt-2 italic">{w.memo}</p>}
               </div>
-              <div className="flex items-center gap-2 ml-4">
+              <div className="ml-0 flex items-center justify-end gap-2 sm:ml-4">
                 <Link href={`/admin/wholesalers/${w.id}/edit`}>
                   <button className="p-2 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
                     <Pencil className="w-4 h-4" />

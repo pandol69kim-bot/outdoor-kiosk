@@ -44,16 +44,16 @@ export default async function AdminDashboard() {
   ]
 
   return (
-    <div className="p-6 max-w-5xl">
+    <div className="max-w-5xl p-4 sm:p-6 lg:p-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">대시보드</h1>
         <p className="text-sm text-gray-500 mt-1">{user?.email} · 관리자</p>
       </div>
 
       {/* 통계 카드 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map(({ label, value, icon: Icon, href, color }) => (
-          <Link key={label} href={href} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+          <Link key={label} href={href} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${color}`}>
               <Icon className="w-5 h-5" />
             </div>
@@ -65,7 +65,7 @@ export default async function AdminDashboard() {
 
       {/* 최근 주문 */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="flex flex-col gap-2 border-b border-gray-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <h2 className="font-semibold text-gray-900">최근 주문</h2>
           <Link href="/admin/orders" className="text-sm text-indigo-600 hover:underline">전체 보기</Link>
         </div>
@@ -74,14 +74,14 @@ export default async function AdminDashboard() {
         ) : (
           <div className="divide-y divide-gray-50">
             {stats.recentOrders.map(order => (
-              <div key={order.id} className="px-6 py-4 flex items-center justify-between">
+              <div key={order.id} className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                 <div>
                   <p className="text-sm font-semibold text-gray-900 font-mono">{order.order_number}</p>
                   <p className="text-xs text-gray-500 mt-0.5">
                     {order.product_name} · {order.customer_name}
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                   <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${ORDER_STATUS_COLORS[order.status as OrderStatus]}`}>
                     {ORDER_STATUS_LABELS[order.status as OrderStatus]}
                   </span>

@@ -77,16 +77,16 @@ export default function AdminProductsPage() {
   })
 
   return (
-    <div className="p-6 max-w-5xl">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-5xl p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">상품 관리</h1>
           <p className="text-sm text-gray-500 mt-1">
             노출 {visibleProducts.length}개 / 숨김 {hiddenProducts.length}개
           </p>
         </div>
-        <Link href="/admin/products/new">
-          <Button size="md">
+        <Link href="/admin/products/new" className="w-full sm:w-auto">
+          <Button size="md" className="w-full sm:w-auto">
             <Plus className="w-4 h-4" />
             상품 등록
           </Button>
@@ -109,11 +109,11 @@ export default function AdminProductsPage() {
           <div className="border-b border-gray-100 px-6 py-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="inline-flex rounded-xl bg-gray-100 p-1">
+                <div className="inline-flex w-full rounded-xl bg-gray-100 p-1 sm:w-auto">
                   <button
                     type="button"
                     onClick={() => setActiveTab('visible')}
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors sm:flex-none ${
                       activeTab === 'visible'
                         ? 'bg-white text-indigo-600 shadow-sm'
                         : 'text-gray-500 hover:text-gray-700'
@@ -124,7 +124,7 @@ export default function AdminProductsPage() {
                   <button
                     type="button"
                     onClick={() => setActiveTab('hidden')}
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors sm:flex-none ${
                       activeTab === 'hidden'
                         ? 'bg-white text-indigo-600 shadow-sm'
                         : 'text-gray-500 hover:text-gray-700'
@@ -148,11 +148,12 @@ export default function AdminProductsPage() {
                 </select>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Button
                   type="button"
                   variant="secondary"
                   size="sm"
+                  className="w-full sm:w-auto"
                   loading={bulkUpdating}
                   onClick={() => handleBulkVisibility(true)}
                 >
@@ -161,6 +162,7 @@ export default function AdminProductsPage() {
                 <Button
                   type="button"
                   size="sm"
+                  className="w-full sm:w-auto"
                   loading={bulkUpdating}
                   onClick={() => handleBulkVisibility(false)}
                 >
@@ -175,77 +177,142 @@ export default function AdminProductsPage() {
               {activeTab === 'visible' ? '조건에 맞는 노출 상품이 없습니다.' : '조건에 맞는 숨김 상품이 없습니다.'}
             </div>
           ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-100">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">상품</th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">판매가</th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">도매처</th>
-                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">상태</th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">관리</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
+            <>
+              <div className="divide-y divide-gray-50 lg:hidden">
                 {filteredProducts.map(product => (
-                  <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-gray-100">
-                          {product.image_url ? (
-                            <Image
-                              src={product.image_url}
-                              alt={product.name}
-                              width={40}
-                              height={40}
-                              className="object-cover w-full h-full"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center text-gray-300">
-                              <span className="text-lg">📦</span>
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{product.name}</p>
-                          {product.description && (
-                            <p className="mt-0.5 line-clamp-1 text-xs text-gray-400">{product.description}</p>
-                          )}
-                        </div>
+                  <div key={product.id} className="space-y-4 px-4 py-4">
+                    <div className="flex items-start gap-3">
+                      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gray-100">
+                        {product.image_url ? (
+                          <Image
+                            src={product.image_url}
+                            alt={product.name}
+                            width={48}
+                            height={48}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-gray-300">
+                            <span className="text-lg">📦</span>
+                          </div>
+                        )}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="text-sm font-semibold text-gray-900">{product.price.toLocaleString()}원</span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="text-xs text-gray-500">
-                        {(product.wholesaler as { name: string } | undefined)?.name || '-'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${product.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                        {product.is_active ? '노출' : '숨김'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link href={`/admin/products/${product.id}/edit`}>
-                          <button className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600">
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(product.id, product.name)}
-                          disabled={deletingId === product.id || !product.is_active || bulkUpdating}
-                          className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-sm font-semibold text-gray-900">{product.name}</p>
+                          <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${product.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                            {product.is_active ? '노출' : '숨김'}
+                          </span>
+                        </div>
+                        {product.description && (
+                          <p className="mt-1 text-xs text-gray-400">{product.description}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <p className="text-xs text-gray-400">판매가</p>
+                        <p className="mt-1 font-semibold text-gray-900">{product.price.toLocaleString()}원</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400">도매처</p>
+                        <p className="mt-1 text-gray-700">{(product.wholesaler as { name: string } | undefined)?.name || '-'}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2">
+                      <Link href={`/admin/products/${product.id}/edit`}>
+                        <button className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600">
+                          <Pencil className="h-4 w-4" />
                         </button>
-                      </div>
-                    </td>
-                  </tr>
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(product.id, product.name)}
+                        disabled={deletingId === product.id || !product.is_active || bulkUpdating}
+                        className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+
+              <div className="hidden overflow-x-auto lg:block">
+                <table className="w-full min-w-[720px]">
+                  <thead className="bg-gray-50 border-b border-gray-100">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">상품</th>
+                      <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">판매가</th>
+                      <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">도매처</th>
+                      <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide">상태</th>
+                      <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">관리</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {filteredProducts.map(product => (
+                      <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-gray-100">
+                              {product.image_url ? (
+                                <Image
+                                  src={product.image_url}
+                                  alt={product.name}
+                                  width={40}
+                                  height={40}
+                                  className="object-cover w-full h-full"
+                                />
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center text-gray-300">
+                                  <span className="text-lg">📦</span>
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">{product.name}</p>
+                              {product.description && (
+                                <p className="mt-0.5 line-clamp-1 text-xs text-gray-400">{product.description}</p>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="text-sm font-semibold text-gray-900">{product.price.toLocaleString()}원</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-xs text-gray-500">
+                            {(product.wholesaler as { name: string } | undefined)?.name || '-'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${product.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                            {product.is_active ? '노출' : '숨김'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Link href={`/admin/products/${product.id}/edit`}>
+                              <button className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600">
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                            </Link>
+                            <button
+                              onClick={() => handleDelete(product.id, product.name)}
+                              disabled={deletingId === product.id || !product.is_active || bulkUpdating}
+                              className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       )}

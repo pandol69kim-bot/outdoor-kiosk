@@ -2,9 +2,9 @@ import { WholesalerNav } from '@/components/wholesaler/WholesalerNav'
 
 export default function WholesalerLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 lg:flex">
       <WholesalerNav />
-      <div className="flex-1 overflow-auto">{children}</div>
+      <div className="flex-1 overflow-x-hidden">{children}</div>
     </div>
   )
 }
