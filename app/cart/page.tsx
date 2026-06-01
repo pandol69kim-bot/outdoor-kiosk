@@ -22,8 +22,8 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
+      <header className="sticky top-0 z-10 border-b border-gray-200 bg-white">
+        <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-4">
           <button
             onClick={() => router.back()}
             className="p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -38,7 +38,7 @@ export default function CartPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-6">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
         {items.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center shadow-sm">
             <ShoppingCart className="mx-auto h-12 w-12 text-gray-300" />
@@ -51,38 +51,41 @@ export default function CartPage() {
         ) : (
           <div className="space-y-4">
             {items.map((item) => (
-              <div key={item.product_id} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-                <div className="flex gap-4">
-                  <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-gray-100">
+              <div key={item.product_id} className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                <div className="flex gap-3 sm:gap-4">
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-gray-100 sm:h-24 sm:w-24">
                     {item.image_url ? (
-                      <Image src={item.image_url} alt={item.name} fill className="object-cover" sizes="96px" />
+                      <Image src={item.image_url} alt={item.name} fill className="object-cover" sizes="(max-width: 640px) 80px, 96px" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-3xl text-gray-300">📦</div>
                     )}
                   </div>
 
-                  <div className="flex-1 space-y-3">
+                  <div className="min-w-0 flex-1 space-y-3">
                     <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-base font-semibold text-gray-900">{item.name}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="break-words text-sm font-semibold text-gray-900 sm:text-base">{item.name}</p>
                         <p className="mt-1 text-sm text-gray-500">{item.price.toLocaleString()}원 / 개</p>
                       </div>
                       <button
                         type="button"
                         onClick={() => removeItem(item.product_id)}
-                        className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                        className="shrink-0 rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
                         aria-label="상품 제거"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
 
-                    <div className="flex items-center justify-between gap-3">
-                      <QuantitySelector
-                        value={item.quantity}
-                        onChange={(quantity) => updateQuantity(item.product_id, quantity)}
-                      />
-                      <p className="text-lg font-bold text-indigo-600">
+                    <div className="flex flex-col gap-3 xs:flex-row xs:items-center xs:justify-between">
+                      <div className="min-w-0">
+                        <QuantitySelector
+                          value={item.quantity}
+                          onChange={(quantity) => updateQuantity(item.product_id, quantity)}
+                          compact
+                        />
+                      </div>
+                      <p className="shrink-0 text-right text-base font-bold text-indigo-600 sm:text-lg">
                         {(item.price * item.quantity).toLocaleString()}원
                       </p>
                     </div>
@@ -91,16 +94,16 @@ export default function CartPage() {
               </div>
             ))}
 
-            <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+            <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5">
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <span>총 상품 수</span>
                 <span>{totalQuantity}개</span>
               </div>
-              <div className="mt-3 flex items-center justify-between">
+              <div className="mt-3 flex items-center justify-between gap-3">
                 <span className="text-base font-semibold text-gray-900">총 주문 금액</span>
-                <span className="text-2xl font-bold text-indigo-600">{totalAmount.toLocaleString()}원</span>
+                <span className="text-right text-xl font-bold text-indigo-600 sm:text-2xl">{totalAmount.toLocaleString()}원</span>
               </div>
-              <div className="mt-5 flex gap-3">
+              <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                 <Link href="/" className="flex-1">
                   <Button variant="secondary" size="lg" className="w-full">상품 더 담기</Button>
                 </Link>
