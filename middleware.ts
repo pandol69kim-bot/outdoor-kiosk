@@ -26,15 +26,48 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const isAdminPath = request.nextUrl.pathname.startsWith('/admin')
-  const isLoginPage = request.nextUrl.pathname === '/admin/login'
+  const isAdminLoginPage = request.nextUrl.pathname === '/admin/login'
+  const isWholesalerPath = request.nextUrl.pathname.startsWith('/wholesaler')
+  const isWholesalerLoginPage = request.nextUrl.pathname === '/wholesaler/login'
 
-  if (isAdminPath && !isLoginPage && !user) {
+  let wholesalerByEmail: { id: string } | null = null
+  if (user?.email && (isAdminPath || isWholesalerPath)) {
+    const { data } = await supabase
+      .from('wholesalers')
+      .select('id')
+      .ilike('email', user.email.trim().toLowerCase())
+      .maybeSingle()
+    wholesalerByEmail = data
+  }
+
+  if (isAdminPath && !isAdminLoginPage && !user) {
     const loginUrl = new URL('/admin/login', request.url)
     return NextResponse.redirect(loginUrl)
   }
 
-  if (isLoginPage && user) {
+  if (isAdminPath && !isAdminLoginPage && wholesalerByEmail) {
+    const ordersUrl = new URL('/wholesaler/orders', request.url)
+    return NextResponse.redirect(ordersUrl)
+  }
+
+  if (isAdminLoginPage && user && !wholesalerByEmail) {
     const dashboardUrl = new URL('/admin', request.url)
+    return NextResponse.redirect(dashboardUrl)
+  }
+
+  if (isWholesalerPath && !isWholesalerLoginPage && !user) {
+    const loginUrl = new URL('/wholesaler/login', request.url)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  if (isWholesalerPath && !isWholesalerLoginPage && user && !wholesalerByEmail) {
+    const loginUrl = new URL('/wholesaler/login', request.url)
+    loginUrl.searchParams.set('error', 'not_wholesaler')
+    return NextResponse.redirect(loginUrl)
+  }
+
+  if (isWholesalerLoginPage && wholesalerByEmail) {
+    const dashboardUrl = new URL('/wholesaler/orders', request.url)
     return NextResponse.redirect(dashboardUrl)
   }
 
@@ -42,5 +75,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/wholesaler/:path*'],
 }

@@ -62,12 +62,15 @@ export function WholesalerForm({ defaultValues, onSubmit, loading }: WholesalerF
       </div>
 
       <Input
-        label="이메일"
+        label="이메일 (로그인용)"
         placeholder="order@example.com"
         type="email"
         {...register('email')}
         error={errors.email?.message}
       />
+      <p className="-mt-3 text-xs text-gray-400">
+        도매처 포털 로그인 계정 이메일과 동일하게 입력하세요.
+      </p>
 
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-gray-700">주문 전달 방식</label>

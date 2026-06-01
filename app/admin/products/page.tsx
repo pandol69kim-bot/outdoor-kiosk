@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import type { Product } from '@/lib/types'
 
 type ProductTab = 'visible' | 'hidden'
+type WholesalerFilter = 'all' | 'none' | string
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -14,6 +15,7 @@ export default function AdminProductsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [bulkUpdating, setBulkUpdating] = useState(false)
   const [activeTab, setActiveTab] = useState<ProductTab>('visible')
+  const [wholesalerFilter, setWholesalerFilter] = useState<WholesalerFilter>('all')
 
   async function fetchProducts() {
     const res = await fetch('/api/products?include_hidden=true')
@@ -61,7 +63,18 @@ export default function AdminProductsPage() {
 
   const visibleProducts = products.filter((product) => product.is_active)
   const hiddenProducts = products.filter((product) => !product.is_active)
-  const filteredProducts = activeTab === 'visible' ? visibleProducts : hiddenProducts
+  const tabProducts = activeTab === 'visible' ? visibleProducts : hiddenProducts
+  const wholesalerOptions = products.reduce<Array<{ id: string, name: string }>>((accumulator, product) => {
+    const wholesaler = product.wholesaler as { id?: string, name?: string } | undefined
+    if (!wholesaler?.id || !wholesaler.name) return accumulator
+    if (accumulator.some((item) => item.id === wholesaler.id)) return accumulator
+    return [...accumulator, { id: wholesaler.id, name: wholesaler.name }]
+  }, []).sort((left, right) => left.name.localeCompare(right.name, 'ko'))
+  const filteredProducts = tabProducts.filter((product) => {
+    if (wholesalerFilter === 'all') return true
+    if (wholesalerFilter === 'none') return !product.wholesaler_id
+    return product.wholesaler_id === wholesalerFilter
+  })
 
   return (
     <div className="p-6 max-w-5xl">
@@ -95,29 +108,44 @@ export default function AdminProductsPage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="border-b border-gray-100 px-6 py-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="inline-flex rounded-xl bg-gray-100 p-1">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('visible')}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                    activeTab === 'visible'
-                      ? 'bg-white text-indigo-600 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="inline-flex rounded-xl bg-gray-100 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('visible')}
+                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                      activeTab === 'visible'
+                        ? 'bg-white text-indigo-600 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    노출 상품 {visibleProducts.length}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('hidden')}
+                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                      activeTab === 'hidden'
+                        ? 'bg-white text-indigo-600 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    숨김 상품 {hiddenProducts.length}
+                  </button>
+                </div>
+
+                <select
+                  value={wholesalerFilter}
+                  onChange={(event) => setWholesalerFilter(event.target.value)}
+                  className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  aria-label="거래처별 상품 필터"
                 >
-                  노출 상품 {visibleProducts.length}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('hidden')}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                    activeTab === 'hidden'
-                      ? 'bg-white text-indigo-600 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  숨김 상품 {hiddenProducts.length}
-                </button>
+                  <option value="all">전체 거래처</option>
+                  <option value="none">거래처 미연결</option>
+                  {wholesalerOptions.map((option) => (
+                    <option key={option.id} value={option.id}>{option.name}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex items-center gap-2">
@@ -144,7 +172,7 @@ export default function AdminProductsPage() {
 
           {filteredProducts.length === 0 ? (
             <div className="px-6 py-16 text-center text-sm text-gray-400">
-              {activeTab === 'visible' ? '노출 중인 상품이 없습니다.' : '숨김 처리된 상품이 없습니다.'}
+              {activeTab === 'visible' ? '조건에 맞는 노출 상품이 없습니다.' : '조건에 맞는 숨김 상품이 없습니다.'}
             </div>
           ) : (
             <table className="w-full">
