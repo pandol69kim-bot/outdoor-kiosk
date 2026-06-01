@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendOrderNotification } from '@/lib/email'
-import type { CreateOrderInput, Wholesaler } from '@/lib/types'
+import { createOrderInputSchema } from '@/lib/order-payload'
+import type { Wholesaler } from '@/lib/types'
 
 function generateOrderNumber(): string {
   const now = new Date()
@@ -27,7 +28,12 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const body: CreateOrderInput = await request.json()
+  const parseResult = createOrderInputSchema.safeParse(await request.json())
+  if (!parseResult.success) {
+    return NextResponse.json({ error: parseResult.error.issues[0]?.message ?? '입력값이 올바르지 않습니다.' }, { status: 400 })
+  }
+
+  const body = parseResult.data
   const admin = createAdminClient()
 
   const { data: product, error: productError } = await admin
@@ -54,7 +60,7 @@ export async function POST(request: NextRequest) {
     customer_name: body.customer_name,
     customer_phone: body.customer_phone,
     delivery_address: body.delivery_address,
-    delivery_memo: body.delivery_memo || null,
+    delivery_memo: body.delivery_memo,
     status: 'received' as const,
     wholesaler_id: wholesaler?.id || null,
     wholesaler_name: wholesaler?.name || null,

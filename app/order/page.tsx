@@ -12,20 +12,47 @@ function OrderContent() {
   const cartMode = searchParams.get('source') === 'cart'
   const product_id = searchParams.get('product_id')
   const quantity = parseInt(searchParams.get('quantity') || '1', 10)
-  const { items: cartItems, isReady: isCartReady, totalAmount, clearCart } = useCart()
+  const { items: cartItems, isReady: isCartReady, clearCart } = useCart()
 
   const [product, setProduct] = useState<Product | null>(null)
+  const [cartPreviewItems, setCartPreviewItems] = useState<Array<{ key: string, name: string, price: number, quantity: number }>>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (cartMode) {
-      if (!isCartReady) return
-      if (cartItems.length === 0) {
-        router.push('/cart')
-        return
+      async function loadCartPreview() {
+        if (!isCartReady) return
+        if (cartItems.length === 0) {
+          router.push('/cart')
+          return
+        }
+
+        try {
+          const previewItems = await Promise.all(
+            cartItems.map(async (item) => {
+              const response = await fetch(`/api/products/${item.product_id}`)
+              if (!response.ok) throw new Error('장바구니 상품 정보를 다시 확인해주세요.')
+              const data: Product = await response.json()
+              return {
+                key: data.id,
+                name: data.name,
+                price: data.price,
+                quantity: item.quantity,
+              }
+            })
+          )
+
+          setCartPreviewItems(previewItems)
+        } catch (cartError) {
+          setError(cartError instanceof Error ? cartError.message : '장바구니 상품 정보를 확인할 수 없습니다.')
+        } finally {
+          setLoading(false)
+        }
       }
+
+      void loadCartPreview()
       return
     }
 
@@ -47,9 +74,9 @@ function OrderContent() {
     }
 
     void loadProduct()
-  }, [cartItems.length, cartMode, isCartReady, product_id, router])
+  }, [cartItems, cartMode, isCartReady, product_id, router])
 
-  const isPageLoading = cartMode ? !isCartReady : loading
+  const isPageLoading = loading || (cartMode && !isCartReady)
 
   async function handleSubmit(values: OrderFormValues) {
     setSubmitting(true)
@@ -57,30 +84,19 @@ function OrderContent() {
 
     try {
       if (cartMode) {
-        const orderNumbers: string[] = []
-        let processedCount = 0
-
-        for (const item of cartItems) {
-          const response = await fetch('/api/orders', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ product_id: item.product_id, quantity: item.quantity, ...values }),
-          })
-          const data = await response.json()
-          if (!response.ok) {
-            const prefix = processedCount > 0 ? '일부 상품 주문 후 ' : ''
-            throw new Error(prefix + (data.error || `${item.name} 주문 실패`))
-          }
-
-          orderNumbers.push(data.order_number)
-          processedCount += 1
-        }
+        const response = await fetch('/api/orders/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: cartItems, ...values }),
+        })
+        const data = await response.json()
+        if (!response.ok) throw new Error(data.error || '주문 실패')
 
         clearCart()
         const params = new URLSearchParams({
-          order_numbers: orderNumbers.join(','),
-          total: totalAmount.toString(),
-          count: orderNumbers.length.toString(),
+          order_numbers: data.order_numbers.join(','),
+          total: data.total.toString(),
+          count: data.count.toString(),
         })
         router.push(`/order/complete?${params.toString()}`)
         return
@@ -114,18 +130,13 @@ function OrderContent() {
   if (!cartMode && !product) return null
 
   const summaryItems = cartMode
-    ? cartItems.map((item) => ({
-        key: item.product_id,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-      }))
+    ? cartPreviewItems
     : product
       ? [{ key: product.id, name: product.name, price: product.price, quantity }]
       : []
 
   const totalPrice = cartMode
-    ? totalAmount
+    ? summaryItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
     : product
       ? product.price * quantity
       : 0
