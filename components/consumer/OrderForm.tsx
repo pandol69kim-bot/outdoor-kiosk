@@ -19,9 +19,10 @@ export type OrderFormValues = z.infer<typeof schema>
 interface OrderFormProps {
   onSubmit: (values: OrderFormValues) => Promise<void>
   loading: boolean
+  submitLabel?: string
 }
 
-export function OrderForm({ onSubmit, loading }: OrderFormProps) {
+export function OrderForm({ onSubmit, loading, submitLabel = '주문하기' }: OrderFormProps) {
   const { register, handleSubmit, formState: { errors } } = useForm<OrderFormValues>({
     resolver: zodResolver(schema),
   })
@@ -56,7 +57,7 @@ export function OrderForm({ onSubmit, loading }: OrderFormProps) {
       />
 
       <Button type="submit" size="xl" loading={loading} className="w-full mt-2">
-        주문하기
+        {submitLabel}
       </Button>
     </form>
   )

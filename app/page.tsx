@@ -1,6 +1,9 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
+import Link from 'next/link'
+import { ShoppingCart } from 'lucide-react'
 import { ProductCard } from '@/components/consumer/ProductCard'
+import { useCart } from '@/hooks/useCart'
 import type { Product } from '@/lib/types'
 
 const IDLE_TIMEOUT_MS = 3 * 60 * 1000
@@ -9,6 +12,7 @@ export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { totalQuantity } = useCart()
 
   useEffect(() => {
     fetch('/api/products')
@@ -54,7 +58,14 @@ export default function HomePage() {
             <h1 className="text-xl font-bold text-gray-900">야외 무인 주문</h1>
             <p className="text-sm text-gray-500">원하는 상품을 선택하세요</p>
           </div>
-          <span className="text-2xl">🛒</span>
+          <Link href="/cart" className="relative rounded-full p-2 transition-colors hover:bg-gray-100" aria-label="장바구니">
+            <ShoppingCart className="h-7 w-7 text-gray-700" />
+            {totalQuantity > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1 text-xs font-semibold text-white">
+                {totalQuantity}
+              </span>
+            )}
+          </Link>
         </div>
       </header>
 

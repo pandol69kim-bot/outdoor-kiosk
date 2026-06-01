@@ -1,10 +1,12 @@
 'use client'
 import { use, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, ShoppingCart } from 'lucide-react'
 import { QuantitySelector } from '@/components/consumer/QuantitySelector'
 import { Button } from '@/components/ui/Button'
+import { useCart } from '@/hooks/useCart'
 import type { Product } from '@/lib/types'
 
 interface Props {
@@ -17,6 +19,8 @@ export default function ProductDetailPage({ params }: Props) {
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
+  const [cartNotice, setCartNotice] = useState<string | null>(null)
+  const { addItem, totalQuantity } = useCart()
 
   useEffect(() => {
     fetch(`/api/products/${id}`)
@@ -33,6 +37,12 @@ export default function ProductDetailPage({ params }: Props) {
       quantity: quantity.toString(),
     })
     router.push(`/order?${params}`)
+  }
+
+  function handleAddToCart() {
+    if (!product) return
+    addItem(product, quantity)
+    setCartNotice(`${quantity}개를 장바구니에 담았습니다.`)
   }
 
   if (loading) {
@@ -58,7 +68,15 @@ export default function ProductDetailPage({ params }: Props) {
           >
             <ArrowLeft className="w-6 h-6 text-gray-600" />
           </button>
-          <h1 className="text-lg font-semibold text-gray-900">상품 상세</h1>
+          <h1 className="flex-1 text-lg font-semibold text-gray-900">상품 상세</h1>
+          <Link href="/cart" className="relative rounded-full p-2 transition-colors hover:bg-gray-100" aria-label="장바구니">
+            <ShoppingCart className="h-6 w-6 text-gray-700" />
+            {totalQuantity > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-600 px-1 text-xs font-semibold text-white">
+                {totalQuantity}
+              </span>
+            )}
+          </Link>
         </div>
       </header>
 
@@ -106,12 +124,20 @@ export default function ProductDetailPage({ params }: Props) {
               </p>
             </div>
           </div>
+          {cartNotice && (
+            <p className="mt-4 rounded-xl bg-indigo-50 px-4 py-3 text-sm text-indigo-700">
+              {cartNotice}
+            </p>
+          )}
         </div>
       </main>
 
       {/* 주문 버튼 */}
       <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-4">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto grid grid-cols-2 gap-3">
+          <Button size="xl" variant="secondary" className="w-full" onClick={handleAddToCart}>
+            장바구니 담기
+          </Button>
           <Button size="xl" className="w-full" onClick={handleOrder}>
             <ShoppingCart className="w-5 h-5" />
             {totalPrice.toLocaleString()}원 주문하기

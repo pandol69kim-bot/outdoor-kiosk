@@ -27,6 +27,14 @@ export interface Product {
   updated_at: string
 }
 
+export interface CartItem {
+  product_id: string
+  name: string
+  price: number
+  image_url: string | null
+  quantity: number
+}
+
 export interface Order {
   id: string
   order_number: string

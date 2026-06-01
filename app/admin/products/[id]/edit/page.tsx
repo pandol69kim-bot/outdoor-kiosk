@@ -19,7 +19,7 @@ export default function EditProductPage({ params }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch(`/api/products/${id}`)
+    fetch(`/api/products/${id}?include_hidden=true`)
       .then(r => r.json())
       .then(setProduct)
       .catch(() => router.push('/admin/products'))

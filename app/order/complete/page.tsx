@@ -8,6 +8,11 @@ function CompleteContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const orderNumber = searchParams.get('order_number') || ''
+  const orderNumbers = (searchParams.get('order_numbers') || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean)
+  const orderCount = parseInt(searchParams.get('count') || `${orderNumbers.length || (orderNumber ? 1 : 0)}`, 10)
   const total = parseInt(searchParams.get('total') || '0', 10)
 
   return (
@@ -18,13 +23,24 @@ function CompleteContent() {
         </div>
 
         <h1 className="text-2xl font-bold text-gray-900 mb-2">주문 완료!</h1>
-        <p className="text-gray-500 mb-8">주문이 성공적으로 접수되었습니다.</p>
+        <p className="text-gray-500 mb-8">{orderCount > 1 ? `${orderCount}건의 주문이 성공적으로 접수되었습니다.` : '주문이 성공적으로 접수되었습니다.'}</p>
 
         <div className="bg-gray-50 rounded-2xl p-5 mb-8 text-left space-y-3">
-          <div className="flex justify-between">
-            <span className="text-sm text-gray-500">주문번호</span>
-            <span className="text-sm font-semibold text-gray-900 font-mono">{orderNumber}</span>
-          </div>
+          {orderNumbers.length > 0 ? (
+            <div className="space-y-2">
+              <span className="text-sm text-gray-500">주문번호</span>
+              <div className="space-y-1">
+                {orderNumbers.map((value) => (
+                  <div key={value} className="text-sm font-semibold text-gray-900 font-mono break-all">{value}</div>
+                ))}
+              </div>
+            </div>
+          ) : orderNumber ? (
+            <div className="flex justify-between gap-4">
+              <span className="text-sm text-gray-500">주문번호</span>
+              <span className="text-sm font-semibold text-gray-900 font-mono text-right break-all">{orderNumber}</span>
+            </div>
+          ) : null}
           {total > 0 && (
             <div className="flex justify-between">
               <span className="text-sm text-gray-500">결제 금액</span>
